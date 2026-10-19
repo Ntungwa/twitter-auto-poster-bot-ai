@@ -13,7 +13,7 @@ const twitterClient = new TwitterApi({
 
 // Initialize the client to point to Vercel AI Gateway
 const gateway = new OpenAI({
-  baseURL: 'https://ai-gateway.vercel.sh/v1', // Vercel AI Gateway endpoint
+  baseURL: 'https://ai-gateway.vercel.sh/v1', 
   apiKey: SECRETS.AI_GATEWAY_API_KEY,
 });
 
@@ -35,10 +35,10 @@ async function run() {
       );
 
       const apiCall = gateway.chat.completions.create({
-        model: "deepseek/deepseek-v4-flash", // Vercel model ID
+        model: "reflection/beam", // Changed to a 100% free Vercel model
         messages: [{ role: "user", content: prompt }],
         max_tokens: 400,
-        temperature: 1.3,
+        temperature: 0.8, // Lowered temperature slightly for better coherence
       });
 
       const response = await Promise.race([apiCall, timeoutPromise]);
