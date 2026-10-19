@@ -3,7 +3,7 @@ const SECRETS = {
   APP_SECRET: process.env.APP_SECRET,
   ACCESS_TOKEN: process.env.ACCESS_TOKEN,
   ACCESS_SECRET: process.env.ACCESS_SECRET,
-  DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY, // Updated to DeepSeek
+  AI_GATEWAY_API_KEY: process.env.AI_GATEWAY_API_KEY,
 };
 
 module.exports = SECRETS;
