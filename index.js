@@ -35,10 +35,10 @@ async function run() {
       );
 
       const apiCall = gateway.chat.completions.create({
-        model: "reflection/beam", // Changed to a 100% free Vercel model
+        model: "inclusionai/ling-3.1-flash-free", // Changed to InclusionAI free model
         messages: [{ role: "user", content: prompt }],
         max_tokens: 400,
-        temperature: 0.8, // Lowered temperature slightly for better coherence
+        temperature: 0.8, 
       });
 
       const response = await Promise.race([apiCall, timeoutPromise]);
