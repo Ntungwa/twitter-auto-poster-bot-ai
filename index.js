@@ -11,16 +11,15 @@ const twitterClient = new TwitterApi({
   accessSecret: SECRETS.ACCESS_SECRET,
 });
 
-// Initialize DeepSeek using the OpenAI SDK
-const deepseek = new OpenAI({
-  baseURL: 'https://api.deepseek.com',
-  apiKey: SECRETS.DEEPSEEK_API_KEY,
+// Initialize the client to point to Vercel AI Gateway
+const gateway = new OpenAI({
+  baseURL: 'https://ai-gateway.vercel.sh/v1', // Vercel AI Gateway endpoint
+  apiKey: SECRETS.AI_GATEWAY_API_KEY,
 });
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function run() {
-  // Your prompt, untouched
   const prompt = "generate bayern munich content, tips and tricks or something new or some rant or some advice as a tweet, it should not be vague and should be unique; under 280 characters and should be plain text, you can use emojis";
 
   let maxRetries = 3;
@@ -29,22 +28,19 @@ async function run() {
 
   while (attempt < maxRetries && !success) {
     try {
-      console.log(`Attempt ${attempt + 1}: Requesting content from DeepSeek...`);
+      console.log(`Attempt ${attempt + 1}: Requesting content via Vercel AI Gateway...`);
       
-      // 30-second timeout wrapper
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error("Request timed out after 30 seconds")), 30000)
       );
 
-      // Call DeepSeek API with the correct current model
-      const apiCall = deepseek.chat.completions.create({
-        model: "deepseek-flash", // Updated to the correct current model
+      const apiCall = gateway.chat.completions.create({
+        model: "deepseek/deepseek-v4-flash", // Vercel model ID
         messages: [{ role: "user", content: prompt }],
         max_tokens: 400,
-        temperature: 1.3, // DeepSeek recommends higher temp for creative/rant content
+        temperature: 1.3,
       });
 
-      // Race the API call against the timeout
       const response = await Promise.race([apiCall, timeoutPromise]);
       const text = response.choices[0].message.content;
       
@@ -58,7 +54,7 @@ async function run() {
       console.error(`Attempt ${attempt} failed:`, error.message);
       
       if (attempt >= maxRetries) {
-        console.error("Max retries reached. Could not get a response from DeepSeek.");
+        console.error("Max retries reached. Could not get a response from Vercel AI Gateway.");
       } else {
         console.log("Retrying in 5 seconds...");
         await delay(5000); 
@@ -76,4 +72,4 @@ async function sendTweet(tweetText) {
   } catch (error) {
     console.error("Error sending tweet:", error);
   }
-         }
+        }
