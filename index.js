@@ -1,6 +1,6 @@
 // By VishwaGauravIn (https://itsvg.in)
 
-const GenAI = require("@google/generative-ai");
+const { GoogleGenAI } = require("@google/genai"); // Changed to new SDK
 const { TwitterApi } = require("twitter-api-v2");
 const SECRETS = require("./SECRETS");
 
@@ -11,27 +11,30 @@ const twitterClient = new TwitterApi({
   accessSecret: SECRETS.ACCESS_SECRET,
 });
 
-const generationConfig = {
-  maxOutputTokens: 400,
-};
-const genAI = new GenAI.GoogleGenerativeAI(SECRETS.GEMINI_API_KEY);
+// Initialize the new SDK client
+const ai = new GoogleGenAI({ apiKey: SECRETS.GEMINI_API_KEY });
 
 async function run() {
-  // For text-only input, use the gemini-pro model
-  const model = genAI.getGenerativeModel({
-    model: "gemini-3.8-flash",
-    generationConfig,
-  });
-
   // Write your prompt here
   const prompt =
     "generate bayern munich content, tips and tricks or something new or some rant or some advice as a tweet, it should not be vague and should be unique; under 280 characters and should be plain text, you can use emojis";
 
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  const text = response.text();
-  console.log(text);
-  sendTweet(text);
+  try {
+    // New SDK syntax for generating content
+    const response = await ai.models.generateContent({
+      model: "gemini-3.8-flash",
+      contents: prompt,
+      config: {
+        maxOutputTokens: 400,
+      }
+    });
+
+    const text = response.text;
+    console.log(text);
+    await sendTweet(text);
+  } catch (error) {
+    console.error("Error generating content:", error);
+  }
 }
 
 run();
