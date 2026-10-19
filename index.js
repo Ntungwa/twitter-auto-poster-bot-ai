@@ -1,6 +1,6 @@
 // By VishwaGauravIn (https://itsvg.in)
 
-const { GoogleGenAI } = require("@google/genai"); // Changed to new SDK
+const OpenAI = require("openai");
 const { TwitterApi } = require("twitter-api-v2");
 const SECRETS = require("./SECRETS");
 
@@ -11,29 +11,59 @@ const twitterClient = new TwitterApi({
   accessSecret: SECRETS.ACCESS_SECRET,
 });
 
-// Initialize the new SDK client
-const ai = new GoogleGenAI({ apiKey: SECRETS.GEMINI_API_KEY });
+// Initialize DeepSeek using the OpenAI SDK
+const deepseek = new OpenAI({
+  baseURL: 'https://api.deepseek.com',
+  apiKey: SECRETS.DEEPSEEK_API_KEY,
+});
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function run() {
-  // Write your prompt here
-  const prompt =
-    "generate bayern munich content, tips and tricks or something new or some rant or some advice as a tweet, it should not be vague and should be unique; under 280 characters and should be plain text, you can use emojis";
+  // Your prompt, untouched
+  const prompt = "generate bayern munich content, tips and tricks or something new or some rant or some advice as a tweet, it should not be vague and should be unique; under 280 characters and should be plain text, you can use emojis";
 
-  try {
-    // New SDK syntax for generating content
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-lite",
-      contents: prompt,
-      config: {
-        maxOutputTokens: 400,
+  let maxRetries = 3;
+  let attempt = 0;
+  let success = false;
+
+  while (attempt < maxRetries && !success) {
+    try {
+      console.log(`Attempt ${attempt + 1}: Requesting content from DeepSeek...`);
+      
+      // 30-second timeout wrapper
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Request timed out after 30 seconds")), 30000)
+      );
+
+      // Call DeepSeek API with the correct current model
+      const apiCall = deepseek.chat.completions.create({
+        model: "deepseek-flash", // Updated to the correct current model
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 400,
+        temperature: 1.3, // DeepSeek recommends higher temp for creative/rant content
+      });
+
+      // Race the API call against the timeout
+      const response = await Promise.race([apiCall, timeoutPromise]);
+      const text = response.choices[0].message.content;
+      
+      console.log("Generated Tweet:\n", text);
+      
+      await sendTweet(text);
+      success = true; 
+      
+    } catch (error) {
+      attempt++;
+      console.error(`Attempt ${attempt} failed:`, error.message);
+      
+      if (attempt >= maxRetries) {
+        console.error("Max retries reached. Could not get a response from DeepSeek.");
+      } else {
+        console.log("Retrying in 5 seconds...");
+        await delay(5000); 
       }
-    });
-
-    const text = response.text;
-    console.log(text);
-    await sendTweet(text);
-  } catch (error) {
-    console.error("Error generating content:", error);
+    }
   }
 }
 
@@ -46,4 +76,4 @@ async function sendTweet(tweetText) {
   } catch (error) {
     console.error("Error sending tweet:", error);
   }
-}
+         }
