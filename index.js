@@ -35,10 +35,16 @@ async function run() {
       );
 
       const apiCall = gateway.chat.completions.create({
-        model: "inclusionai/ling-3.1-flash-free", // Changed to InclusionAI free model
+        model: "inclusionai/ling-3.1-flash", // Standard model ID
         messages: [{ role: "user", content: prompt }],
         max_tokens: 400,
-        temperature: 0.8, 
+        temperature: 0.8,
+        // This tells the gateway to only use free-tier routing
+        providerOptions: {
+          gateway: {
+            has: ['free']
+          }
+        }
       });
 
       const response = await Promise.race([apiCall, timeoutPromise]);
