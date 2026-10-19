@@ -72,4 +72,4 @@ async function sendTweet(tweetText) {
   } catch (error) {
     console.error("Error sending tweet:", error);
   }
-        }
+}
