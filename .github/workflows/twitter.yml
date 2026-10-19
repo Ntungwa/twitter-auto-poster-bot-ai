@@ -1,16 +1,13 @@
 name: Auto Tweet Using AI
 
-# This automatically cancels old, stuck runs if a new one starts
+# Automatically cancels old, stuck runs
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
 
-# Runs every 3 hours
 on:
   schedule:
     - cron: "0 */3 * * *"
-
-  # This command allows us to run the Action automatically from the Actions tab.
   workflow_dispatch:
 
 jobs:
@@ -32,5 +29,5 @@ jobs:
           APP_SECRET: ${{ secrets.APP_SECRET }}
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           ACCESS_SECRET: ${{ secrets.ACCESS_SECRET }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }} # Updated to DeepSeek
         run: npm start
