@@ -29,7 +29,7 @@ async function run() {
       console.log(`Attempt ${attempt + 1}: Requesting content from Gemini...`);
       
       const response = await ai.models.generateContent({
-        model: "gemini-3.6-flash",
+        model: "gemini-3.8-flash",
         contents: prompt,
         config: {
           maxOutputTokens: 400,
