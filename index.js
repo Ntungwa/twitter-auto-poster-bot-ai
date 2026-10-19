@@ -11,7 +11,6 @@ const twitterClient = new TwitterApi({
   accessSecret: SECRETS.ACCESS_SECRET,
 });
 
-// Initialize the client to point to Vercel AI Gateway
 const gateway = new OpenAI({
   baseURL: 'https://ai-gateway.vercel.sh/v1', 
   apiKey: SECRETS.AI_GATEWAY_API_KEY,
@@ -35,14 +34,13 @@ async function run() {
       );
 
       const apiCall = gateway.chat.completions.create({
-        model: "inclusionai/ling-3.1-flash", // Standard model ID
+        model: "minimax/minimax-m3.1-flash", // Verified free model
         messages: [{ role: "user", content: prompt }],
         max_tokens: 400,
         temperature: 0.8,
-        // This tells the gateway to only use free-tier routing
         providerOptions: {
           gateway: {
-            has: ['free']
+            order: ["minimax"] // Forces the free MiniMax provider
           }
         }
       });
@@ -51,7 +49,6 @@ async function run() {
       const text = response.choices[0].message.content;
       
       console.log("Generated Tweet:\n", text);
-      
       await sendTweet(text);
       success = true; 
       
@@ -60,7 +57,7 @@ async function run() {
       console.error(`Attempt ${attempt} failed:`, error.message);
       
       if (attempt >= maxRetries) {
-        console.error("Max retries reached. Could not get a response from Vercel AI Gateway.");
+        console.error("Max retries reached.");
       } else {
         console.log("Retrying in 5 seconds...");
         await delay(5000); 
